@@ -1,0 +1,23 @@
+{
+  "name": "json_schema_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.ts",
+  "scripts": {
+    "clean": "rm -rf src/generated",
+    "openapi": "openapi-generator-cli generate -i ./openapi/petstore.yaml -o src/generated/openapi -g typescript-fetch --additional-properties=supportsES6=true,npmVersion=6.9.0,typescriptThreePlus=true",
+    "jsonschema": "for TYPE in $(cat src/generated/openapi/models/index.ts | grep export | rev | cut -d '/' -f 1 | rev | tr -d \"';\"); do echo \"Generate JSON schema for type $TYPE\"; time npx ts-json-schema-generator --tsconfig tsconfig.json --strict-tuples --additional-properties false --path src/generated/openapi/models/${TYPE}.ts --type ${TYPE} --out src/generated/json-schema/${TYPE}Schema.json; done",
+    "patchjsonschema": "for SCHEMA in $(find src/generated/json-schema -name '*.json'); do echo  \"Patch schema $SCHEMA\"; sed -i '/.*$schema.*/d' $SCHEMA; done",
+    "gen": "npm-run-all clean openapi jsonschema patchjsonschema",
+    "demo": "npx ts-node src/app.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@openapitools/openapi-generator-cli": "^2.11.0",
+    "ajv": "^8.12.0",
+    "npm-run-all": "^4.1.5",
+    "ts-json-schema-generator": "^1.5.0",
+    "typescript": "^5.4.2"
+  }
+}
